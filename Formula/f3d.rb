@@ -4,7 +4,6 @@ class F3d < Formula
   url "https://github.com/f3d-app/f3d/archive/refs/tags/v1.3.1.tar.gz"
   sha256 "653dc4044e14d0618c1d947a8ee85d2513e100b3fc24bd6e51830131a13e795d"
   license "BSD-3-Clause"
-  revision 1
 
   bottle do
     sha256 cellar: :any,                 arm64_monterey: "ac70f7b75dd20fbb59976ad90a62a14db3190c90f2f97294c39771e74efaf48e"
@@ -21,10 +20,8 @@ class F3d < Formula
   depends_on "opencascade"
   depends_on "vtk"
 
-  fails_with gcc: "5" # vtk is built with GCC
-
   def install
-    args = std_cmake_args + %W[
+    args = %W[
       -DF3D_MACOS_BUNDLE:BOOL=OFF
       -DBUILD_SHARED_LIBS:BOOL=ON
       -DBUILD_TESTING:BOOL=OFF
@@ -32,15 +29,12 @@ class F3d < Formula
       -DF3D_MODULE_ALEMBIC:BOOL=ON
       -DF3D_MODULE_ASSIMP:BOOL=ON
       -DF3D_MODULE_OCCT:BOOL=ON
-      -DCMAKE_INSTALL_NAME_DIR:STRING=#{lib}
-      -DCMAKE_INSTALL_RPATH:STRING=#{lib}
+      -DCMAKE_INSTALL_RPATH:STRING=#{rpath}
     ]
 
-    mkdir "build" do
-      system "cmake", "..", *args
-      system "make"
-      system "make", "install"
-    end
+    system "cmake", "-S", ".", "-B", "build", *args, *std_cmake_args
+    system "cmake", "--build", "build"
+    system "cmake", "--install", "build"
   end
 
   test do
